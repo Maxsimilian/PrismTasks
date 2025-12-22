@@ -13,7 +13,7 @@ const API_URL =
 
 export const api = axios.create({
   baseURL: API_URL,
-  withCredentials: false, 
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,11 +33,15 @@ const setToken = (token: string | null) => {
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getToken(); // This uses your safe localStorage check
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // DEBUG: Log outgoing requests
+    console.log('[API Request]', config.method?.toUpperCase(), config.url,
+      token ? '(with token)' : '(no token)');
+
     return config;
   },
   (error) => {
@@ -61,12 +65,21 @@ api.interceptors.response.use(
 
 export const authApi = {
   login: async (data: URLSearchParams) => {
+    console.log('[Auth] Calling /auth/token...');
     const res = await api.post<AuthResponse>('/auth/token', data, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    
+
+    console.log('[Auth] Response received:', {
+      hasAccessToken: !!res.data.access_token,
+      tokenType: res.data.token_type,
+    });
+
     if (res.data.access_token) {
       setToken(res.data.access_token);
+      console.log('[Auth] Token stored in localStorage:', !!localStorage.getItem(TOKEN_KEY));
+    } else {
+      console.error('[Auth] No access_token in response!');
     }
     return res.data;
   },

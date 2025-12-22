@@ -26,9 +26,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refreshUser = useCallback(async () => {
         try {
+            console.log('[AuthContext] Fetching user data...');
             const response = await authApi.me();
+            console.log('[AuthContext] User fetched:', response.data?.username);
             setUser(response.data);
         } catch {
+            console.log('[AuthContext] Failed to fetch user (not authenticated)');
             setUser(null);
         } finally {
             setLoading(false);
@@ -54,12 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (data: URLSearchParams) => {
         try {
+            console.log('[AuthContext] Starting login...');
             await authApi.login(data);
+            console.log('[AuthContext] Login API complete, refreshing user...');
             await refreshUser();
+            console.log('[AuthContext] User refreshed, redirecting to dashboard...');
             toastSuccess("Successfully logged in");
             router.push('/dashboard');
         } catch (err: unknown) {
             const msg = getErrorMessage(err);
+            console.error('[AuthContext] Login failed:', msg);
             toastError(msg || "Login failed");
             throw err;
         }
