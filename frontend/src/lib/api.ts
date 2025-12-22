@@ -1,57 +1,87 @@
 import axios, { AxiosError } from 'axios';
 import {
-    User, Todo, AuthResponse,
-    CreateTodoRequest, UpdateTodoRequest,
-    UpdateUserRequest, ChangePasswordRequest,
-    CreateUserRequest
+  User, Todo, AuthResponse,
+  CreateTodoRequest, UpdateTodoRequest,
+  UpdateUserRequest, ChangePasswordRequest,
+  CreateUserRequest
 } from '@/types';
 
 const API_URL =
-  typeof window !== 'undefined' &&
-  window.location.hostname === 'localhost'
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:8000'
     : 'https://prismtasks-render.onrender.com';
 
-
 export const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Event bus for auth errors
+const TOKEN_KEY = 'access_token';
+
+const getToken = () =>
+  typeof window === 'undefined' ? null : localStorage.getItem(TOKEN_KEY);
+
+const setToken = (token: string | null) => {
+  if (typeof window === 'undefined') return;
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+};
+
+api.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const authEvents = new EventTarget();
 
 api.interceptors.response.use(
-    (response) => response,
-    (error: AxiosError) => {
-        // Only trigger logout redirect for 401 errors on protected endpoints
-        // Skip for /user/get_user since that's used for initial auth checking
-        const isAuthCheckEndpoint = error.config?.url?.includes('/user/get_user');
-        if (error.response?.status === 401 && !isAuthCheckEndpoint) {
-            authEvents.dispatchEvent(new Event('logout'));
-        }
-        return Promise.reject(error);
+  (response) => response,
+  (error: AxiosError) => {
+    const isAuthCheckEndpoint = error.config?.url?.includes('/user/get_user');
+    if (error.response?.status === 401 && !isAuthCheckEndpoint) {
+      authEvents.dispatchEvent(new Event('logout'));
     }
+    return Promise.reject(error);
+  }
 );
 
 export const authApi = {
-    login: (data: URLSearchParams) =>
-        api.post<AuthResponse>('/auth/login', data, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }),
-    logout: () => api.post('/auth/logout'),
-    register: (data: CreateUserRequest) => api.post('/auth/', { ...data, role: 'user' }),
-    me: () => api.get<User>('/user/get_user'),
-    updateProfile: (data: UpdateUserRequest) => api.put('/user/update_user', data),
-    changePassword: (data: ChangePasswordRequest) => api.patch('/user/change_password', data),
+  login: async (data: URLSearchParams) => {
+    const res = await api.post<AuthResponse>('/auth/token', data, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    setToken(res.data.access_token ?? null);
+    return res.data;
+  },
+
+  logout: async () => {
+    setToken(null);
+    return { ok: true };
+  },
+
+  register: (data: CreateUserRequest) =>
+    api.post('/auth/', { ...data, role: 'user' }),
+
+  me: () => api.get<User>('/user/get_user'),
+
+  updateProfile: (data: UpdateUserRequest) =>
+    api.put('/user/update_user', data),
+
+  changePassword: (data: ChangePasswordRequest) =>
+    api.patch('/user/change_password', data),
 };
 
 export const todoApi = {
-    getAll: () => api.get<Todo[]>('/'),
-    create: (data: CreateTodoRequest) => api.post('/todo', data),
-    update: (id: number, data: UpdateTodoRequest) => api.put(`/todo/${id}`, data),
-    delete: (id: number) => api.delete(`/todo/${id}`),
+  getAll: () => api.get<Todo[]>('/'),
+  create: (data: CreateTodoRequest) => api.post('/todo', data),
+  update: (id: number, data: UpdateTodoRequest) =>
+    api.put(`/todo/${id}`, data),
+  delete: (id: number) => api.delete(`/todo/${id}`),
 };
