@@ -180,25 +180,49 @@ async def login_for_access_token(
     return {"access_token": token, "token_type": "bearer"}
 
 
+@router.post('/login')
+async def login_with_cookie(
+    response: Response,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: db_dependency
+):
+    """Cookie-based login for browser clients."""
+    user = authenticate_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+
+    token = create_access_token(
+        username=user.username,
+        user_id=user.id,
+        role=user.role,
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+
+    # Set httpOnly cookie with strict deploy-compatible attributes
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        path="/",
+        samesite="none",
+        secure=True,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+    return {"ok": True}
+
+
 @router.post('/logout')
 async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         path="/",
+        httponly=True,
         samesite="none",
         secure=True,
     )
     return {"ok": True}
 
-
-@router.post('/logout')
-async def logout(response: Response):
-    """Clear the authentication cookie using matching attributes."""
-    response.delete_cookie(
-        key="access_token",
-        path="/",
-        httponly=True,
-        samesite=COOKIE_SAMESITE,
-        secure=SECURE_COOKIE,
-    )
-    return {"ok": True}
