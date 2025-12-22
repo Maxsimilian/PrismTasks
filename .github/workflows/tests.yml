@@ -10,85 +10,105 @@ jobs:
   frontend-tests:
     name: Frontend Tests
     runs-on: ubuntu-latest
-    
     defaults:
       run:
         working-directory: ./frontend
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
-      
+
       - name: Install dependencies
-        run: npm ci
-      
+        run: npm install
+
       - name: Run tests
         run: npm test
-      
+
       - name: Generate coverage report
         run: npm run test:coverage
-      
-      - name: Upload coverage to Codecov
+
+      - name: Upload coverage to Codecov (non-blocking)
+        continue-on-error: true
         uses: codecov/codecov-action@v4
         with:
-          files: ./frontend/coverage/coverage-final.json
+          files: ./frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
+
 
   backend-tests:
     name: Backend Tests
     runs-on: ubuntu-latest
-    
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: prism
+          POSTGRES_PASSWORD: prism
+          POSTGRES_DB: prismtasks_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U prism -d prismtasks_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql+psycopg2://prism:prism@localhost:5432/prismtasks_test
+      # Add any other env vars your backend expects in tests, e.g.:
+      # SECRET_KEY: test_secret_key
+      # ENV: test
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
-      
+
       - name: Run tests
-        run: |
-          pytest backend/tests/ -v --cov=backend --cov-report=xml --cov-report=term
-      
-      - name: Upload coverage to Codecov
+        run: pytest backend/tests/ -v --cov=backend --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov (non-blocking)
+        continue-on-error: true
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           flags: backend
           name: backend-coverage
 
+
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
-      
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm ci
-      
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Run ESLint
-        working-directory: ./frontend
         run: npm run lint
