@@ -6,14 +6,19 @@ import {
     CreateUserRequest
 } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL =
+  typeof window !== 'undefined' &&
+  window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : 'https://prismtasks-render.onrender.com';
+
 
 export const api = axios.create({
-    baseURL: API_URL,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: API_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Event bus for auth errors

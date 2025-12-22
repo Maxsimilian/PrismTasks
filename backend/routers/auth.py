@@ -219,8 +219,8 @@ async def login_with_cookie(
         value=token,
         httponly=True,
         path="/",
-        samesite=COOKIE_SAMESITE,
-        secure=SECURE_COOKIE,
+        samesite="none",
+        secure=True,
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
