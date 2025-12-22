@@ -11,7 +11,7 @@ from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from starlette import status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from dotenv import load_dotenv
 
@@ -40,10 +40,6 @@ COOKIE_SAMESITE = os.getenv('COOKIE_SAMESITE', 'lax').lower()
 SECURE_COOKIE = (ENV == "prod") or (COOKIE_SAMESITE == "none")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 20
-
-# Fixed tokenUrl with leading slash
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl='/auth/token', auto_error=False)
-
 
 def get_db():
     db = SessionLocal()
@@ -125,31 +121,23 @@ def decode_token(token: str) -> dict:
         )
 
 
-async def get_current_user(
-    request: Request,
-    token: Annotated[Optional[str], Depends(oauth2_bearer)] = None
-):
-    """
-    Get current user from either:
-    1. Authorization: Bearer <token> header (priority)
-    2. access_token cookie (fallback)
-    """
-    # Priority 1: Check Bearer token from header
-    if token:
-        return decode_token(token)
-    
-    # Priority 2: Check cookie
-    cookie_token = request.cookies.get('access_token')
-    if cookie_token:
-        # We manually decode cookie token (it's the same JWT)
-        return decode_token(cookie_token)
-    
-    # No valid auth found
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Not authenticated',
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+async def get_current_user(request: Request):
+    auth_header = request.headers.get("authorization")
+    token = None
+
+    if auth_header and auth_header.lower().startswith("bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    return decode_token(token)
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
@@ -192,38 +180,14 @@ async def login_for_access_token(
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.post('/login')
-async def login_with_cookie(
-    response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: db_dependency
-):
-    """Cookie-based login for browser clients."""
-    user = authenticate_user(form_data.username, form_data.password, db)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
-
-    token = create_access_token(
-        username=user.username,
-        user_id=user.id,
-        role=user.role,
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-
-    # Set httpOnly cookie with strict deploy-compatible attributes
-    response.set_cookie(
+@router.post('/logout')
+async def logout(response: Response):
+    response.delete_cookie(
         key="access_token",
-        value=token,
-        httponly=True,
         path="/",
         samesite="none",
         secure=True,
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
-
     return {"ok": True}
 
 
