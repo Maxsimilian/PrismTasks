@@ -11,16 +11,17 @@ load_dotenv()
 app = FastAPI()
 
 # ---- CORS ----
-frontend_origins_env = os.getenv(
-    "FRONTEND_ORIGINS",
-    "http://localhost:3000,http://localhost:5173"
-)
-
-FRONTEND_ORIGINS = [o.strip() for o in frontend_origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=FRONTEND_ORIGINS,
+    # Local + stable production domain
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://prismtasks-vercel.vercel.app",
+    ],
+    # All Vercel preview deployments
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
