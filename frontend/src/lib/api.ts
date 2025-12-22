@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import {
   User, Todo, AuthResponse,
   CreateTodoRequest, UpdateTodoRequest,
@@ -13,7 +13,7 @@ const API_URL =
 
 export const api = axios.create({
   baseURL: API_URL,
-  withCredentials: false,
+  withCredentials: false, 
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,14 +30,20 @@ const setToken = (token: string | null) => {
   else localStorage.removeItem(TOKEN_KEY);
 };
 
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = getToken(); // This uses your safe localStorage check
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export const authEvents = new EventTarget();
 
@@ -46,6 +52,7 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     const isAuthCheckEndpoint = error.config?.url?.includes('/user/get_user');
     if (error.response?.status === 401 && !isAuthCheckEndpoint) {
+      setToken(null);
       authEvents.dispatchEvent(new Event('logout'));
     }
     return Promise.reject(error);
@@ -57,7 +64,10 @@ export const authApi = {
     const res = await api.post<AuthResponse>('/auth/token', data, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    setToken(res.data.access_token ?? null);
+    
+    if (res.data.access_token) {
+      setToken(res.data.access_token);
+    }
     return res.data;
   },
 
