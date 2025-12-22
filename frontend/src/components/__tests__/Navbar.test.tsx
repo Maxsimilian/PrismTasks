@@ -18,6 +18,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -33,6 +34,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -46,6 +48,9 @@ describe('Navbar Component', () => {
             id: 1,
             username: 'testuser',
             email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            role: 'user',
         };
 
         mockUseAuth.mockReturnValue({
@@ -54,6 +59,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -69,6 +75,9 @@ describe('Navbar Component', () => {
             id: 1,
             username: 'testuser',
             email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            role: 'user',
         };
 
         mockUseAuth.mockReturnValue({
@@ -77,6 +86,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: mockLogout,
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -94,6 +104,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -107,6 +118,9 @@ describe('Navbar Component', () => {
             id: 1,
             username: 'testuser',
             email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            role: 'user',
         };
 
         mockUseAuth.mockReturnValue({
@@ -115,6 +129,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -130,6 +145,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
@@ -145,6 +161,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         const { container } = render(<Navbar />);
@@ -159,6 +176,9 @@ describe('Navbar Component', () => {
             id: 1,
             username: 'verylongusernamethatshouldbetruncat',
             email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            role: 'user',
         };
 
         mockUseAuth.mockReturnValue({
@@ -167,6 +187,7 @@ describe('Navbar Component', () => {
             login: vi.fn(),
             register: vi.fn(),
             logout: vi.fn(),
+            refreshUser: vi.fn(),
         });
 
         render(<Navbar />);
