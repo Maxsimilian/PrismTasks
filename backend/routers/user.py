@@ -2,12 +2,12 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from models import Users
-from database import SessionLocal
+from backend.models import Users
+from backend.database import SessionLocal
 from starlette import status
 from pydantic import BaseModel, Field, field_validator
 import re
-from .auth import get_current_user, create_access_token
+from backend.routers.auth import get_current_user, create_access_token
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 

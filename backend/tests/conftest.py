@@ -11,10 +11,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.database import Base, get_db
+from backend.database import Base
 from backend.main import app
+from backend.routers import auth, todos, user, admin
 
-# Create in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
@@ -28,88 +28,56 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="function")
 def db_session():
-    """
-    Create a fresh database session for each test.
-    
-    Yields:
-        Session: SQLAlchemy database session
-    """
-    # Create all tables
     Base.metadata.create_all(bind=engine)
-    
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
-        # Drop all tables after test
         Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture(scope="function")
 def client(db_session):
-    """
-    Create a test client with database session override.
-    
-    Args:
-        db_session: Database session fixture
-        
-    Yields:
-        TestClient: FastAPI test client
-    """
     def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-    
-    app.dependency_overrides[get_db] = override_get_db
-    
+        yield db_session
+
+    app.dependency_overrides[auth.get_db] = override_get_db
+    app.dependency_overrides[todos.get_db] = override_get_db
+    app.dependency_overrides[user.get_db] = override_get_db
+    app.dependency_overrides[admin.get_db] = override_get_db
+
     with TestClient(app) as test_client:
         yield test_client
-    
+
     app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def test_user_data():
-    """
-    Provide test user data for registration and login tests.
-    
-    Returns:
-        dict: User registration data
-    """
     return {
-        "email": "test@example.com",
         "username": "testuser",
+        "email": "test@example.com",
+        "first_name": "Test",
+        "last_name": "User",
+        "role": "user",
+        "phone_number": "07123456789",
         "password": "SecurePassword123!",
     }
 
 
 @pytest.fixture
 def authenticated_client(client, test_user_data):
-    """
-    Create an authenticated test client with a registered user.
-    
-    Args:
-        client: FastAPI test client
-        test_user_data: Test user registration data
-        
-    Returns:
-        TestClient: Authenticated test client
-    """
-    # Register user
-    client.post("/auth/register", json=test_user_data)
-    
-    # Login to get authentication cookie
-    response = client.post(
-        "/auth/token",
+    reg = client.post("/auth/", json=test_user_data)
+    assert reg.status_code in (200, 201), reg.text
+
+    resp = client.post(
+        "/auth/login",
         data={
-            "username": test_user_data["email"],
+            "username": test_user_data["username"],
             "password": test_user_data["password"],
         },
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
-    
-    assert response.status_code == 200
-    
+    assert resp.status_code == 200, resp.text
     return client

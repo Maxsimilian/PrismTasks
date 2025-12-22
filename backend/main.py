@@ -1,11 +1,10 @@
 import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-import models
-from database import engine
-from routers import auth, todos, admin, user
-
+from backend.database import engine
+from backend import models
+from backend.routers import auth, todos, admin, user
 load_dotenv()
 
 app = FastAPI()
@@ -21,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-models.base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
 app.include_router(todos.router)

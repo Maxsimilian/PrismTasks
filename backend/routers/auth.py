@@ -4,10 +4,10 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, field_validator
 import re
-from models import Users
+from backend.models import Users
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from database import SessionLocal
+from backend.database import SessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from starlette import status

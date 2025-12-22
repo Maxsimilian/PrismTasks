@@ -2,11 +2,11 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from models import Todos
-from database import SessionLocal
+from backend.models import Todos
+from backend.database import SessionLocal
 from starlette import status
 from pydantic import BaseModel, Field
-from .auth import get_current_user
+from backend.routers.auth import get_current_user
 
 router = APIRouter( 
     prefix='/admin', 
