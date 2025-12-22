@@ -23,11 +23,16 @@ router = APIRouter(
 )
 ph = PasswordHasher()
 
-# Environment variables - fail loudly if SECRET_KEY is missing
-SECRET_KEY = os.getenv('SECRET_KEY')
-if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY environment variable is not set. Application cannot start.")
 
+# Environment variables - fail loudly if SECRET_KEY is missing
+ENV = os.getenv("ENV", "dev")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    if ENV == "test":
+        SECRET_KEY = "test-secret"  # safe default for CI/tests only
+    else:
+        raise RuntimeError("SECRET_KEY environment variable is not set. Application cannot start.")
+    
 ALGORITHM = 'HS256'
 ENV = os.getenv('ENV', 'dev')
 COOKIE_SAMESITE = os.getenv('COOKIE_SAMESITE', 'lax').lower()
