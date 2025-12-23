@@ -216,7 +216,7 @@ export default function Home() {
       {/* Minimal Footer */}
       <footer className="py-16 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-4 md:mb-0 font-medium">© 2025 PrismTasks. Built for details.</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4 md:mb-0 font-medium">© 2025 PrismTasks • Built by Maxsimilian Amalathas</p>
           <div className="flex space-x-8">
             <Link href="/privacy" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors font-medium">Privacy</Link>
             <Link href="/terms" className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors font-medium">Terms</Link>
