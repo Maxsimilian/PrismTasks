@@ -7,6 +7,8 @@
 [![Backend](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+🔗 **[Live Demo](https://prismtasks-vercel.vercel.app/)** | [API Docs](https://prismtasks-render.onrender.com/docs)
+
 ## ✨ Overview
 
 PrismTasks is a personal full-stack project built to explore and demonstrate modern web development practices.
