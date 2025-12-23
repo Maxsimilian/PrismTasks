@@ -10,13 +10,11 @@ import { Input } from '@/components/ui/Input';
 import Link from 'next/link';
 import { Eye, EyeOff, KeyRound, User } from 'lucide-react';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
 type LoginData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const { login } = useAuth();
-    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -35,7 +33,7 @@ export default function LoginPage() {
             formData.append('username', data.username);
             formData.append('password', data.password);
             await login(formData);
-            router.push('/dashboard');
+            // AuthContext.login() handles redirect to /dashboard
         } catch (error) {
             console.error("Login failed", error);
         } finally {
