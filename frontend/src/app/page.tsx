@@ -204,7 +204,7 @@ export default function Home() {
         </div>
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight">Ready to get organised?</h2>
-          <p className="text-blue-100/80 text-xl mb-12 max-w-2xl mx-auto">Join thousands of users shipping small wins every day. Open source, fast, and free.</p>
+          <p className="text-blue-100/80 text-xl mb-12 max-w-2xl mx-auto">Join users making steady progress every day. Open-source, fast, and free.</p>
           <Link href="/register">
             <Button size="lg" className="rounded-full px-12 py-8 text-xl font-semibold bg-white text-gray-900 hover:bg-blue-50 hover:scale-105 transition-all duration-300 border-none shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]">
               Start for Free
