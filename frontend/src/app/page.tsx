@@ -54,7 +54,7 @@ export default function Home() {
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-            PrismTasks is your intelligent productivity OS. Organise your life, capture small wins, and maintain laser focus on what truly matters.
+            PrismTasks helps you plan your work, track progress, and stay focused through a clean, minimal task management interface.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20">
@@ -210,7 +210,6 @@ export default function Home() {
               Start for Free
             </Button>
           </Link>
-          <p className="mt-6 text-sm text-gray-400">No credit card required</p>
         </div>
       </section>
 
