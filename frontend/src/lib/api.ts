@@ -86,6 +86,8 @@ export const authApi = {
 
   changePassword: (data: ChangePasswordRequest) =>
     api.patch('/user/change_password', data),
+
+  deleteAccount: () => api.delete('/user/delete_account'),
 };
 
 export const todoApi = {

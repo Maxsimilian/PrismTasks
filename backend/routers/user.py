@@ -2,7 +2,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from backend.models import Users
+from backend.models import Users, Todos
 from backend.database import SessionLocal
 from starlette import status
 from pydantic import BaseModel, Field, field_validator
@@ -104,4 +104,23 @@ async def update_user_data(db: db_dependency, user_request: UserUpdateRequest, u
 
     for k, v in user_request.model_dump(exclude_unset=True).items():
         setattr(user_data, k, v)
+    db.commit()
+
+
+@router.delete('/delete_account', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(db: db_dependency, user: user_dependency):
+    """Permanently delete the authenticated user's account and all associated data."""
+    if user is None:
+        raise HTTPException(status_code=401, detail='Unauthorised')
+    
+    user_id = user.get('id')
+    user_data = db.scalar(select(Users).where(Users.id == user_id))
+    if user_data is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
+    
+    # Delete all todos associated with the user
+    db.query(Todos).filter(Todos.owner_id == user_id).delete()
+    
+    # Delete the user account
+    db.delete(user_data)
     db.commit()

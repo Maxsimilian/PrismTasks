@@ -3,9 +3,10 @@
 import { useAuth } from "@/hooks/useAuth";
 import { UpdateUserForm } from "@/components/UpdateUserForm";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
+import { DeleteAccountSection } from "@/components/DeleteAccountSection";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { User, Shield, Key, ChevronLeft } from "lucide-react";
+import { User, Shield, Key, ChevronLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function ProfilePage() {
@@ -83,6 +84,18 @@ export default function ProfilePage() {
                             <ChangePasswordForm />
                         </div>
                     </div>
+                </div>
+
+                {/* Account Management */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Trash2 className="h-5 w-5 text-gray-400" />
+                            Account Management
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-1 pl-7">Manage your account settings.</p>
+                    </div>
+                    <DeleteAccountSection />
                 </div>
             </div>
         </div>
